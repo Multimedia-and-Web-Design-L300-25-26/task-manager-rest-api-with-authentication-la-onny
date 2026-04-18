@@ -1,10 +1,16 @@
 import request from "supertest";
 import app from "../src/app.js";
+import User from "../src/models/User.js";
+import Task from "../src/models/Task.js";
 
 let token;
 let taskId;
 
+// Clean up before all tests
 beforeAll(async () => {
+  await User.deleteMany({ email: /^task/ });
+  await Task.deleteMany({});
+  
   // Register
   await request(app)
     .post("/api/auth/register")
@@ -35,6 +41,7 @@ describe("Task Routes", () => {
   });
 
   it("should create a task", async () => {
+    console.log("Token used:", token); // ← add this
     const res = await request(app)
       .post("/api/tasks")
       .set("Authorization", `Bearer ${token}`)
@@ -42,7 +49,7 @@ describe("Task Routes", () => {
         title: "Test Task",
         description: "Testing"
       });
-
+    console.log("Task response body:", res.body); // ← add this
     expect(res.statusCode).toBe(201);
     expect(res.body.title).toBe("Test Task");
 
